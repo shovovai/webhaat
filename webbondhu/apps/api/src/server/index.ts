@@ -1,0 +1,13 @@
+import http from "node:http";
+import { Server } from "socket.io";
+import { connectDatabase } from "@webbondhu/database";
+import { env, corsOrigins } from "../config/env";
+import { logger } from "../lib/logger";
+import { createApp } from "./app";
+const port = Number(process.env.PORT ?? 4000);
+const app = createApp();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: corsOrigins, credentials: true } });
+io.on("connection", (socket) => { socket.emit("connected", { service: "webbondhu-realtime" }); });
+await connectDatabase(env.MONGODB_URI);
+server.listen(port, () => logger.info("WebBondhu API started", { port }));
